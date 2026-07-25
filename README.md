@@ -73,7 +73,7 @@ catalogo-filmes/
 Após a publicação no GitHub, utilize:
 
 ```bash
-git clone ENDERECO_DO_REPOSITORIO
+git clone https://github.com/GabrielABRP98/catalogo-filmes.git
 ```
 
 Entre na pasta do projeto:
