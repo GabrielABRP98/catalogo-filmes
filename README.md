@@ -2,7 +2,15 @@
 
 Aplicação web para gerenciamento de um catálogo pessoal de filmes, desenvolvida com **Python**, **Streamlit** e **SQLite**.
 
-O sistema permite cadastrar, consultar, pesquisar, editar e excluir filmes, além de acompanhar quais títulos já foram assistidos e suas respectivas avaliações.
+O sistema permite cadastrar, consultar, pesquisar, editar e excluir filmes, além de controlar quais títulos já foram assistidos e registrar avaliações de 0 a 10.
+
+## 🌐 Demonstração online
+
+A aplicação está publicada no Streamlit Community Cloud:
+
+[**Acessar o Catálogo de Filmes**](https://catalogo-filmes-gabriel.streamlit.app)
+
+> A versão online utiliza um banco SQLite local. Como o armazenamento do Streamlit Community Cloud pode ser reiniciado, alterações realizadas online podem não permanecer definitivamente.
 
 ## 📋 Funcionalidades
 
@@ -11,20 +19,19 @@ O sistema permite cadastrar, consultar, pesquisar, editar e excluir filmes, alé
 - Pesquisa por título ou gênero
 - Registro do ano de lançamento
 - Registro do gênero
-- Avaliação de 0 a 10
+- Avaliação opcional de 0 a 10
 - Controle de filmes assistidos e pendentes
-- Edição das informações cadastradas
-- Exclusão de filmes com confirmação
-- Indicadores de quantidade de filmes
+- Edição de informações
+- Exclusão com confirmação
+- Indicadores do catálogo
 - Cálculo da média das avaliações
-- Persistência de dados com SQLite
-- Geração automática do banco de dados
-- Carregamento de dados de demonstração
-- Testes automatizados com Pytest
+- Persistência local com SQLite
+- Carregamento automático de dados demonstrativos
+- Testes automatizados do banco de dados
 
-## 📊 Indicadores exibidos
+## 📊 Indicadores
 
-A página principal apresenta os seguintes indicadores:
+A página principal apresenta:
 
 - Total de filmes cadastrados
 - Total de filmes assistidos
@@ -37,9 +44,10 @@ A página principal apresenta os seguintes indicadores:
 - Streamlit
 - SQLite
 - Pandas
-- Pytest
+- pytest
 - Git
 - GitHub
+- Streamlit Community Cloud
 
 ## 📁 Estrutura do projeto
 
@@ -59,34 +67,28 @@ catalogo-filmes/
 
 | Arquivo | Descrição |
 |---|---|
-| `app.py` | Interface web desenvolvida com Streamlit |
-| `database.py` | Funções de conexão e manipulação do banco SQLite |
-| `seed_database.py` | Script para inserir filmes de demonstração |
-| `requirements.txt` | Dependências necessárias para executar o projeto |
-| `.gitignore` | Arquivos e pastas que não devem ser enviados ao GitHub |
+| `app.py` | Interface web e fluxo principal da aplicação |
+| `database.py` | Conexão com o SQLite e operações CRUD |
+| `seed_database.py` | Inserção dos 30 filmes demonstrativos |
+| `requirements.txt` | Dependências do projeto |
+| `.gitignore` | Arquivos que não devem ser versionados |
 | `tests/test_database.py` | Testes automatizados das operações do banco |
 
-## 🚀 Como executar o projeto
+## 🚀 Como executar localmente
 
 ### 1. Clonar o repositório
-
-Após a publicação no GitHub, utilize:
 
 ```bash
 git clone https://github.com/GabrielABRP98/catalogo-filmes.git
 ```
 
-Entre na pasta do projeto:
+Entre na pasta:
 
 ```bash
 cd catalogo-filmes
 ```
 
-Enquanto o repositório ainda não estiver publicado, basta abrir a pasta local do projeto no VS Code.
-
 ### 2. Criar o ambiente virtual
-
-No terminal, execute:
 
 ```bash
 python -m venv .venv
@@ -124,33 +126,13 @@ Quando o ambiente estiver ativo, o terminal mostrará:
 python -m pip install -r requirements.txt
 ```
 
-### 5. Carregar os dados de demonstração
-
-O projeto possui um script com 30 filmes para demonstrar o funcionamento do sistema.
-
-Execute:
-
-```bash
-python seed_database.py
-```
-
-Resultado esperado:
-
-```text
-Filmes adicionados: 30
-Filmes já existentes: 0
-Total no catálogo: 30
-```
-
-O script pode ser executado novamente sem duplicar os mesmos filmes. Os registros já existentes são identificados pelo título e pelo ano de lançamento.
-
-### 6. Executar a aplicação
+### 5. Executar a aplicação
 
 ```bash
 python -m streamlit run app.py
 ```
 
-Depois, acesse no navegador:
+Acesse no navegador:
 
 ```text
 http://localhost:8501
@@ -158,17 +140,37 @@ http://localhost:8501
 
 Para encerrar a aplicação, pressione `Ctrl + C` no terminal.
 
+## 🌱 Dados de demonstração
+
+Quando a aplicação encontra o banco vazio, os 30 filmes demonstrativos são carregados automaticamente.
+
+Também é possível executar o script manualmente:
+
+```bash
+python seed_database.py
+```
+
+Resultado esperado na primeira execução:
+
+```text
+Filmes adicionados: 30
+Filmes já existentes: 0
+Total no catálogo: 30
+```
+
+O script identifica filmes existentes pelo título e pelo ano, evitando que os mesmos registros sejam inseridos novamente.
+
 ## 🗄️ Banco de dados
 
-O projeto utiliza SQLite para armazenar os dados localmente.
+O projeto utiliza SQLite para armazenar os dados.
 
-O arquivo do banco é criado automaticamente com o nome:
+O arquivo é criado automaticamente com o nome:
 
 ```text
 catalogo_filmes.db
 ```
 
-A tabela principal possui os seguintes campos:
+### Estrutura da tabela `filmes`
 
 | Campo | Descrição |
 |---|---|
@@ -176,54 +178,13 @@ A tabela principal possui os seguintes campos:
 | `titulo` | Título do filme |
 | `ano` | Ano de lançamento |
 | `genero` | Gênero do filme |
-| `nota` | Avaliação entre 0 e 10 |
+| `nota` | Avaliação opcional entre 0 e 10 |
 | `assistido` | Indica se o filme foi assistido |
 | `criado_em` | Data e hora do cadastro |
 
-O arquivo `catalogo_filmes.db` não é enviado ao GitHub, pois está incluído no `.gitignore`.
+O arquivo `catalogo_filmes.db` está incluído no `.gitignore` e não é enviado ao GitHub.
 
-Cada pessoa que executar o projeto poderá gerar seu próprio banco local.
-
-## 🧪 Testes automatizados
-
-Os testes verificam as principais operações do banco de dados:
-
-- Cadastro de filmes
-- Listagem de filmes
-- Pesquisa por identificador
-- Pesquisa por título ou gênero
-- Atualização de registros
-- Exclusão de registros
-- Validação de título obrigatório
-- Validação de notas entre 0 e 10
-
-Para executar os testes:
-
-```bash
-python -m pytest -v
-```
-
-Resultado esperado:
-
-```text
-7 passed
-```
-
-Os testes utilizam bancos temporários e não alteram o banco principal da aplicação.
-
-## 🔒 Validações implementadas
-
-O sistema possui validações para impedir:
-
-- Cadastro de filmes sem título
-- Cadastro de anos anteriores a 1888
-- Cadastro de anos posteriores a 2100
-- Cadastro de notas menores que 0
-- Cadastro de notas maiores que 10
-- Valores inválidos no campo de filme assistido
-- Comandos SQL inseridos diretamente pelos usuários
-
-As operações no banco utilizam consultas parametrizadas para reduzir riscos de injeção de SQL.
+Cada instalação local gera seu próprio banco de dados.
 
 ## 💻 Operações disponíveis
 
@@ -239,63 +200,93 @@ Permite registrar:
 
 ### Consultar
 
-Exibe os filmes cadastrados em uma tabela organizada.
+Apresenta os filmes cadastrados em uma tabela organizada.
 
 ### Pesquisar
 
-Permite pesquisar filmes pelo título ou pelo gênero.
+Filtra os registros pelo título ou gênero.
 
 ### Editar
 
-Permite alterar os dados de um filme já cadastrado.
+Permite alterar as informações de um filme existente.
 
 ### Excluir
 
-Permite remover um filme após uma confirmação do usuário.
+Remove um filme após a confirmação do usuário.
 
-## 🌱 Dados de demonstração
+## 🔒 Validações implementadas
 
-O arquivo `seed_database.py` contém uma seleção de 30 filmes de diferentes gêneros e períodos.
+O sistema impede:
 
-Ele foi criado para:
+- Cadastro sem título
+- Ano anterior a 1888
+- Ano posterior a 2100
+- Nota menor que 0
+- Nota maior que 10
+- Valor inválido no campo de situação do filme
 
-- Demonstrar o funcionamento do sistema
-- Preencher os indicadores da página inicial
-- Testar a ferramenta de pesquisa
-- Testar filmes assistidos e pendentes
-- Apresentar o projeto em um portfólio
+As operações utilizam consultas SQL parametrizadas, evitando a inserção direta dos valores do usuário nos comandos SQL.
 
-## 📌 Possíveis melhorias futuras
+## 🧪 Testes automatizados
 
-- Filtro por ano de lançamento
-- Filtro por situação de assistido
+Os testes verificam:
+
+- Cadastro de filmes
+- Listagem de filmes
+- Busca por identificador
+- Pesquisa por título ou gênero
+- Atualização de registros
+- Exclusão de registros
+- Validação de título obrigatório
+- Validação de notas
+
+Execute:
+
+```bash
+python -m pytest -v
+```
+
+Resultado esperado:
+
+```text
+7 passed
+```
+
+Os testes utilizam bancos temporários e não alteram o banco principal da aplicação.
+
+## 📌 Melhorias futuras
+
+- Filtros por ano e situação
 - Ordenação por título, ano ou nota
 - Cadastro de diretor
 - Cadastro de sinopse
-- Inclusão de imagens e pôsteres
-- Integração com uma API pública de filmes
-- Sistema de usuários
+- Inclusão de pôsteres
+- Integração com uma API de filmes
 - Exportação do catálogo para CSV
 - Gráficos por gênero e avaliação
-- Hospedagem da aplicação
-- Banco de dados PostgreSQL para produção
+- Autenticação de usuários
+- Banco PostgreSQL para persistência em produção
+- Interface responsiva aprimorada
 
 ## 🎯 Objetivo do projeto
 
-Este projeto foi desenvolvido para praticar e demonstrar conhecimentos em:
+O projeto foi desenvolvido para praticar e demonstrar conhecimentos em:
 
 - Desenvolvimento com Python
 - Criação de interfaces web
-- Manipulação de bancos de dados
 - Operações CRUD
+- Manipulação de bancos de dados
 - Validação de dados
-- Organização de código
+- Consultas SQL parametrizadas
+- Organização e separação de responsabilidades
 - Testes automatizados
 - Controle de versão com Git
-- Documentação de projetos
+- Documentação técnica
+- Publicação de aplicações web
 
 ## 👤 Autor
 
 **Gabriel Peixoto**
 
-GitHub: `GabrielABRP98`
+- GitHub: [GabrielABRP98](https://github.com/GabrielABRP98)
+- Aplicação: [Catálogo de Filmes](https://catalogo-filmes-gabriel.streamlit.app)
