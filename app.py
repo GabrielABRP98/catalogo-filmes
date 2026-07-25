@@ -11,6 +11,7 @@ from database import (
     inicializar_banco,
     listar_filmes,
 )
+from seed_database import popular_banco
 
 
 st.set_page_config(
@@ -20,7 +21,21 @@ st.set_page_config(
 )
 
 
-inicializar_banco()
+def preparar_banco() -> None:
+    """
+    Cria o banco e adiciona os filmes demonstrativos
+    quando a aplicação é executada pela primeira vez.
+    """
+
+    if "banco_preparado" in st.session_state:
+        return
+
+    inicializar_banco()
+
+    if not listar_filmes():
+        popular_banco()
+
+    st.session_state["banco_preparado"] = True
 
 
 def preparar_tabela(filmes: list[dict]) -> pd.DataFrame:
@@ -36,7 +51,11 @@ def preparar_tabela(filmes: list[dict]) -> pd.DataFrame:
     )
 
     tabela["nota"] = tabela["nota"].apply(
-        lambda valor: "Sem nota" if pd.isna(valor) else f"{valor:.1f}"
+        lambda valor: (
+            "Sem nota"
+            if pd.isna(valor)
+            else f"{valor:.1f}"
+        )
     )
 
     tabela = tabela.rename(
@@ -64,12 +83,23 @@ def preparar_tabela(filmes: list[dict]) -> pd.DataFrame:
     ]
 
 
+try:
+    preparar_banco()
+except Exception as erro:
+    st.error(
+        "Não foi possível preparar o banco de dados. "
+        f"Detalhes: {erro}"
+    )
+    st.stop()
+
+
 st.title("🎬 Catálogo de Filmes")
 
 st.write(
     "Aplicação para cadastrar, consultar, editar e excluir filmes "
     "utilizando Python, Streamlit e SQLite."
 )
+
 
 aba_catalogo, aba_cadastro, aba_edicao = st.tabs(
     [
@@ -86,7 +116,9 @@ with aba_catalogo:
     total_filmes = len(todos_os_filmes)
 
     total_assistidos = sum(
-        1 for filme in todos_os_filmes if filme["assistido"]
+        1
+        for filme in todos_os_filmes
+        if filme["assistido"]
     )
 
     total_pendentes = total_filmes - total_assistidos
@@ -97,17 +129,34 @@ with aba_catalogo:
         if filme["nota"] is not None
     ]
 
-    media_notas = sum(notas) / len(notas) if notas else 0
+    media_notas = (
+        sum(notas) / len(notas)
+        if notas
+        else 0
+    )
 
     coluna1, coluna2, coluna3, coluna4 = st.columns(4)
 
-    coluna1.metric("Filmes cadastrados", total_filmes)
-    coluna2.metric("Assistidos", total_assistidos)
-    coluna3.metric("Pendentes", total_pendentes)
+    coluna1.metric(
+        "Filmes cadastrados",
+        total_filmes,
+    )
+
+    coluna2.metric(
+        "Assistidos",
+        total_assistidos,
+    )
+
+    coluna3.metric(
+        "Pendentes",
+        total_pendentes,
+    )
 
     coluna4.metric(
         "Média das notas",
-        f"{media_notas:.1f}" if notas else "Sem notas",
+        f"{media_notas:.1f}"
+        if notas
+        else "Sem notas",
     )
 
     st.divider()
@@ -117,26 +166,39 @@ with aba_catalogo:
         placeholder="Digite um título ou gênero...",
     )
 
-    filmes_encontrados = listar_filmes(busca=busca)
+    filmes_encontrados = listar_filmes(
+        busca=busca,
+    )
 
     if filmes_encontrados:
-        tabela = preparar_tabela(filmes_encontrados)
+        tabela = preparar_tabela(
+            filmes_encontrados
+        )
 
         st.dataframe(
             tabela,
             use_container_width=True,
             hide_index=True,
         )
+
     elif busca:
-        st.warning("Nenhum filme encontrado para essa pesquisa.")
+        st.warning(
+            "Nenhum filme encontrado para essa pesquisa."
+        )
+
     else:
-        st.info("Nenhum filme foi cadastrado ainda.")
+        st.info(
+            "Nenhum filme foi cadastrado ainda."
+        )
 
 
 with aba_cadastro:
     st.subheader("Cadastrar novo filme")
 
-    with st.form("formulario_cadastro", clear_on_submit=True):
+    with st.form(
+        "formulario_cadastro",
+        clear_on_submit=True,
+    ):
         titulo = st.text_input(
             "Título",
             placeholder="Exemplo: Interestelar",
@@ -173,7 +235,9 @@ with aba_cadastro:
             disabled=not possui_nota,
         )
 
-        assistido = st.checkbox("Filme já assistido")
+        assistido = st.checkbox(
+            "Filme já assistido"
+        )
 
         cadastrar = st.form_submit_button(
             "Cadastrar filme",
@@ -187,12 +251,17 @@ with aba_cadastro:
                 titulo=titulo,
                 ano=int(ano),
                 genero=genero,
-                nota=float(nota) if possui_nota else None,
+                nota=(
+                    float(nota)
+                    if possui_nota
+                    else None
+                ),
                 assistido=assistido,
             )
 
             st.success(
-                f"Filme cadastrado com sucesso! ID: {filme_id}"
+                "Filme cadastrado com sucesso! "
+                f"ID: {filme_id}"
             )
 
         except ValueError as erro:
@@ -200,7 +269,8 @@ with aba_cadastro:
 
         except Exception as erro:
             st.error(
-                f"Não foi possível cadastrar o filme: {erro}"
+                "Não foi possível cadastrar o filme. "
+                f"Detalhes: {erro}"
             )
 
 
@@ -211,14 +281,16 @@ with aba_edicao:
 
     if not filmes_cadastrados:
         st.info(
-            "Cadastre pelo menos um filme antes de utilizar esta seção."
+            "Cadastre pelo menos um filme antes "
+            "de utilizar esta seção."
         )
 
     else:
         opcoes = {
             (
                 f'{filme["id"]} — '
-                f'{filme["titulo"]} ({filme["ano"]})'
+                f'{filme["titulo"]} '
+                f'({filme["ano"]})'
             ): filme["id"]
             for filme in filmes_cadastrados
         }
@@ -228,11 +300,23 @@ with aba_edicao:
             options=list(opcoes.keys()),
         )
 
-        filme_id = opcoes[filme_selecionado]
-        filme = buscar_filme(filme_id)
+        filme_id = opcoes[
+            filme_selecionado
+        ]
 
-        if filme is not None:
-            with st.form("formulario_edicao"):
+        filme = buscar_filme(
+            filme_id
+        )
+
+        if filme is None:
+            st.error(
+                "O filme selecionado não foi encontrado."
+            )
+
+        else:
+            with st.form(
+                "formulario_edicao"
+            ):
                 titulo_editado = st.text_input(
                     "Título",
                     value=filme["titulo"],
@@ -245,7 +329,9 @@ with aba_edicao:
                         "Ano de lançamento",
                         min_value=1888,
                         max_value=2100,
-                        value=int(filme["ano"]),
+                        value=int(
+                            filme["ano"]
+                        ),
                         step=1,
                     )
 
@@ -257,7 +343,10 @@ with aba_edicao:
 
                 possui_nota_editada = st.checkbox(
                     "O filme possui nota",
-                    value=filme["nota"] is not None,
+                    value=(
+                        filme["nota"]
+                        is not None
+                    ),
                 )
 
                 nota_atual = (
@@ -272,12 +361,16 @@ with aba_edicao:
                     max_value=10.0,
                     value=nota_atual,
                     step=0.1,
-                    disabled=not possui_nota_editada,
+                    disabled=(
+                        not possui_nota_editada
+                    ),
                 )
 
                 assistido_editado = st.checkbox(
                     "Filme assistido",
-                    value=bool(filme["assistido"]),
+                    value=bool(
+                        filme["assistido"]
+                    ),
                 )
 
                 salvar = st.form_submit_button(
@@ -298,7 +391,9 @@ with aba_edicao:
                             if possui_nota_editada
                             else None
                         ),
-                        assistido=assistido_editado,
+                        assistido=(
+                            assistido_editado
+                        ),
                     )
 
                     if atualizado:
@@ -306,34 +401,63 @@ with aba_edicao:
                             "Filme atualizado com sucesso."
                         )
                         st.rerun()
+
                     else:
-                        st.error("Filme não encontrado.")
+                        st.error(
+                            "Filme não encontrado."
+                        )
 
                 except ValueError as erro:
                     st.error(str(erro))
 
                 except Exception as erro:
                     st.error(
-                        f"Não foi possível atualizar o filme: {erro}"
+                        "Não foi possível atualizar "
+                        "o filme. "
+                        f"Detalhes: {erro}"
                     )
 
             st.divider()
             st.subheader("Excluir filme")
 
             confirmar_exclusao = st.checkbox(
-                f'Confirmo a exclusão de "{filme["titulo"]}"'
+                "Confirmo a exclusão de "
+                f'"{filme["titulo"]}"',
+                key=(
+                    f"confirmar_exclusao_"
+                    f"{filme_id}"
+                ),
             )
 
-            if st.button(
+            excluir = st.button(
                 "Excluir permanentemente",
                 type="secondary",
-                disabled=not confirmar_exclusao,
+                disabled=(
+                    not confirmar_exclusao
+                ),
                 use_container_width=True,
-            ):
-                excluido = excluir_filme(filme_id)
+            )
 
-                if excluido:
-                    st.success("Filme excluído com sucesso.")
-                    st.rerun()
-                else:
-                    st.error("Filme não encontrado.")
+            if excluir:
+                try:
+                    excluido = excluir_filme(
+                        filme_id
+                    )
+
+                    if excluido:
+                        st.success(
+                            "Filme excluído com sucesso."
+                        )
+                        st.rerun()
+
+                    else:
+                        st.error(
+                            "Filme não encontrado."
+                        )
+
+                except Exception as erro:
+                    st.error(
+                        "Não foi possível excluir "
+                        "o filme. "
+                        f"Detalhes: {erro}"
+                    )
